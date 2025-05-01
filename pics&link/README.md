@@ -1,5 +1,2 @@
 # Full Stack Apps on AWS Project
-
- link : 
-http://projectstartercode-dev.us-east-1.elasticbeanstalk.com/
-
+Please see new word file fbi.dotx for new pictures
