@@ -2,7 +2,6 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { filterImageFromURL, deleteLocalFiles } from './util/util.js';
 import fs from 'fs';
-import path from 'path';
 import dotenv from 'dotenv';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
@@ -48,7 +47,8 @@ app.get('/filteredimage', async (req, res) => {
       Bucket: process.env.S3_BUCKET_NAME,
       Key: key,
       Body: fileContent,
-      ContentType: 'image/jpeg'
+      ContentType: 'image/jpeg',
+      ACL: 'public-read' // Make image publicly viewable
     };
 
     await s3.send(new PutObjectCommand(uploadParams));
@@ -59,19 +59,8 @@ app.get('/filteredimage', async (req, res) => {
     // Clean up local temp file
     deleteLocalFiles([filteredPath]);
 
-    // Return an HTML page displaying the image
-    return res.status(200).send(`
-      <html>
-        <head>
-          <title>Filtered Image</title>
-        </head>
-        <body>
-          <h2>Filtered Image:</h2>
-          <img src="${s3Url}" alt="Filtered Image" style="max-width:100%; height:auto;" />
-          <p><a href="${s3Url}" target="_blank">Open image in new tab</a></p>
-        </body>
-      </html>
-    `);
+    // Redirect the browser to display the image
+    return res.redirect(s3Url);
   } catch (error) {
     console.error('Error:', error.message);
 
