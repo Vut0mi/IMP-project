@@ -12,11 +12,18 @@ export async function filterImageFromURL(inputURL) {
     const photo = await Jimp.read(inputURL);
     const outpath = path.join('/tmp', `filtered.${Date.now()}.jpg`);
 
-    await photo
-      .resize(256, 256)
-      .quality(60)
-      .greyscale()
-      .writeAsync(outpath);
+    // Apply filters
+    photo
+      .resize(256, 256)    // resize to 256x256
+      .quality(60)         // set JPEG quality
+      .greyscale();        // convert to greyscale
+
+    await photo.writeAsync(outpath); // save image
+
+    // Ensure file exists before returning
+    if (!fs.existsSync(outpath)) {
+      throw new Error("Filtered image was not saved properly.");
+    }
 
     return outpath;
   } catch (error) {
@@ -31,7 +38,9 @@ export async function filterImageFromURL(inputURL) {
 export async function deleteLocalFiles(files) {
   for (const file of files) {
     try {
-      fs.unlinkSync(file);
+      if (fs.existsSync(file)) {
+        fs.unlinkSync(file);
+      }
     } catch (err) {
       console.warn(`Could not delete file ${file}: ${err.message}`);
     }

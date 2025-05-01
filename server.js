@@ -53,17 +53,25 @@ app.get('/filteredimage', async (req, res) => {
 
     await s3.send(new PutObjectCommand(uploadParams));
 
-    // Construct public S3 URL (assuming the bucket is public or presigned access)
+    // Construct public S3 URL
     const s3Url = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 
     // Clean up local temp file
     deleteLocalFiles([filteredPath]);
 
-    // Return success with S3 URL
-    return res.status(200).send({
-      message: 'Image filtered and uploaded to S3 successfully.',
-      s3_url: s3Url
-    });
+    // Return an HTML page displaying the image
+    return res.status(200).send(`
+      <html>
+        <head>
+          <title>Filtered Image</title>
+        </head>
+        <body>
+          <h2>Filtered Image:</h2>
+          <img src="${s3Url}" alt="Filtered Image" style="max-width:100%; height:auto;" />
+          <p><a href="${s3Url}" target="_blank">Open image in new tab</a></p>
+        </body>
+      </html>
+    `);
   } catch (error) {
     console.error('Error:', error.message);
 
@@ -77,7 +85,7 @@ app.get('/filteredimage', async (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.send('try GET /filteredimage?image_url={{URL}}');
+  res.send('Try GET /filteredimage?image_url={{URL}}');
 });
 
 // Start server
